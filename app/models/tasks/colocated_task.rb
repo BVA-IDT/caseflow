@@ -15,9 +15,9 @@ class ColocatedTask < Task
         assignee = Colocated.singleton.next_assignee(self)
         records = params_array.map do |params|
           team_task = create_from_params(
-            params.merge(assigned_to: Colocated.singleton, status: Constants.TASK_STATUSES.on_hold), user
+            params.merge(assigned_to: Colocated.singleton), user
           )
-          individual_task = create_from_params(params.merge(assigned_to: assignee, parent: team_task), user)
+          individual_task = create_from_params(params.merge(assigned_to: assignee, parent_id: team_task.id), user)
 
           [team_task, individual_task]
         end.flatten
@@ -28,6 +28,14 @@ class ColocatedTask < Task
         end
 
         records
+      end
+    end
+
+    def verify_user_can_create!(user, parent)
+      if parent
+        super(user, parent)
+      elsif !(user.attorney_in_vacols? || user.judge_in_vacols?)
+        fail Caseflow::Error::ActionForbiddenError, message: "Current user cannot access this task"
       end
     end
 
@@ -57,7 +65,9 @@ class ColocatedTask < Task
   end
 
   def actions_available?(user)
-    return false if completed? || assigned_to != user
+    not_assigned_to_user = assigned_to != user
+    not_assigned_to_user_org = !(assigned_to.is_a?(Organization) && assigned_to.user_has_access?(user))
+    return false if completed? || (not_assigned_to_user && not_assigned_to_user_org)
 
     true
   end
