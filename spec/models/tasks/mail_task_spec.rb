@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe MailTask do
   describe ".create_from_params" do
     let(:user) { FactoryBot.create(:user) }

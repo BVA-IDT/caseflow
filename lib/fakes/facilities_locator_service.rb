@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Fakes::FacilitiesLocatorService < ExternalApi::FacilitiesLocatorService
   def self.get_distance(_point, _ids) # rubocop:disable Metrics/MethodLength
     [

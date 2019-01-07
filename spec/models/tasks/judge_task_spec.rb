@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe JudgeTask do
   let(:judge) { create(:user) }
   let(:judge2) { create(:user) }

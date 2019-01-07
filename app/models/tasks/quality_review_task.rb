@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class QualityReviewTask < GenericTask
   def available_actions(user)
     return super if assigned_to != user

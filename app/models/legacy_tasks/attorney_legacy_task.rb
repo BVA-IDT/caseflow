@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AttorneyLegacyTask < LegacyTask
   def available_actions(role)
     return [] if role != "attorney"

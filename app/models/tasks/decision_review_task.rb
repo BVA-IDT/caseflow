@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DecisionReviewTask < GenericTask
   def label
     appeal_type.constantize.review_title

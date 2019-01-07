@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Api::V1::AppealsController < Api::ApplicationController
   def index
     api_key.api_views.create(vbms_id: vbms_id)

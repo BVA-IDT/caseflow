@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DecisionReviewIntake < Intake
   def ui_hash(ama_enabled)
     super.merge(

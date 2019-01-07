@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This module has too many lines temporarily. There are a few deprecated methods that will be removed once
 # we turn on 'ama_decision_issues' flag
 # rubocop:disable Metrics/ModuleLength

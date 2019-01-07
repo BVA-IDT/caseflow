@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ExternalApi::FacilitiesLocatorService
   class << self
     # :nocov:

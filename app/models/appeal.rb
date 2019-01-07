@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Appeal < DecisionReview
   include Taskable
 

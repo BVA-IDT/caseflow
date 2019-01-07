@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CaseReviewsController < ApplicationController
   CASE_REVIEW_CLASSES = {
     AttorneyCaseReview: AttorneyCaseReview,

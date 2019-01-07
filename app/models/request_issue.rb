@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RequestIssue < ApplicationRecord
   include Asyncable
 
@@ -37,7 +39,7 @@ class RequestIssue < ApplicationRecord
     end
   end
 
-  UNIDENTIFIED_ISSUE_MSG = "UNIDENTIFIED ISSUE - Please click \"Edit in Caseflow\" button to fix".freeze
+  UNIDENTIFIED_ISSUE_MSG = "UNIDENTIFIED ISSUE - Please click \"Edit in Caseflow\" button to fix"
 
   class << self
     def submitted_at_column

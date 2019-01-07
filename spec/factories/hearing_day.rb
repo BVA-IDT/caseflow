@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :hearing_day do
     hearing_date { Date.new(2019, 3, 2) }

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JudgeAssignTask < JudgeTask
   def available_actions(_user)
     [Constants.TASK_ACTIONS.ASSIGN_TO_ATTORNEY.to_h]

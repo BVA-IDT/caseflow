@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class V2::AppealSerializer < ActiveModel::Serializer
   def id
     object.vacols_id

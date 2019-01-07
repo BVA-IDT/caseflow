@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Organization do
   describe "#user_has_access" do
     let(:org) { create(:organization) }

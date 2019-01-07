@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe DecisionReviewTask do
   describe "#label" do
     subject { create(:higher_level_review_task).becomes(described_class) }

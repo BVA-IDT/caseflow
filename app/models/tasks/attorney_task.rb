@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AttorneyTask < Task
   validates :assigned_by, presence: true
   validates :parent, presence: true, if: :ama?

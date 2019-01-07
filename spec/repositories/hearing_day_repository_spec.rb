@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe HearingDayRepository do
   context ".slots_based_on_type" do
     subject { HearingDayRepository.slots_based_on_type(staff: staff, type: type, date: date) }

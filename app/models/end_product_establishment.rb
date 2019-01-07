@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # EndProductEstablishment represents an end product that Caseflow has either established or attempted to
 # establish (if the establishment was successful `established_at` will be set). The purpose of the
 # end product is determined by the `source`.
@@ -14,8 +16,8 @@ class EndProductEstablishment < ApplicationRecord
   belongs_to :source, polymorphic: true
   belongs_to :user
 
-  CANCELED_STATUS = "CAN".freeze
-  CLEARED_STATUS = "CLR".freeze
+  CANCELED_STATUS = "CAN"
+  CLEARED_STATUS = "CLR"
 
   # benefit_type_code => program_type_code
   PROGRAM_TYPE_CODES = {

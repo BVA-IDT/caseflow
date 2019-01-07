@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Appeal do
   context "priority and non-priority appeals" do
     let!(:appeal) { create(:appeal) }

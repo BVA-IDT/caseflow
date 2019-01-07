@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class SupplementalClaim < ClaimReview
   END_PRODUCT_CODES = {
     rating: "040SCR",

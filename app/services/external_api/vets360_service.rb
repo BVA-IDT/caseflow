@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ExternalApi::Vets360Service
   class << self
     # :nocov:

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Vso < Organization
   def user_has_access?(user)
     return false unless user.roles.include?("VSO")

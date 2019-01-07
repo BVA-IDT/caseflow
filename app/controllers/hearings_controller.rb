@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HearingsController < ApplicationController
   before_action :verify_access, except: [:show_print, :show, :update]
   before_action :check_hearing_prep_out_of_service

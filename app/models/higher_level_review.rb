@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HigherLevelReview < ClaimReview
   with_options if: :saving_review do
     validates :informal_conference, :same_office, inclusion: { in: [true, false], message: "blank" }
@@ -14,10 +16,10 @@ class HigherLevelReview < ClaimReview
 
   # NOTE: These are the string identifiers for the DTA error dispositions returned from VBMS.
   # The characters an encoding is precise so don't change these unless you know they match VBMS values.
-  DTA_ERROR_PMR = "DTA Error - PMRs".freeze
-  DTA_ERROR_FED_RECS = "DTA Error - Fed Recs".freeze
-  DTA_ERROR_OTHER_RECS = "DTA Error - Other Recs".freeze
-  DTA_ERROR_EXAM_MO = "DTA Error - Exam/MO".freeze
+  DTA_ERROR_PMR = "DTA Error - PMRs"
+  DTA_ERROR_FED_RECS = "DTA Error - Fed Recs"
+  DTA_ERROR_OTHER_RECS = "DTA Error - Other Recs"
+  DTA_ERROR_EXAM_MO = "DTA Error - Exam/MO"
   DTA_ERRORS = [DTA_ERROR_PMR, DTA_ERROR_FED_RECS, DTA_ERROR_OTHER_RECS, DTA_ERROR_EXAM_MO].freeze
 
   def self.review_title

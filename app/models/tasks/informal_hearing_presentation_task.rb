@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class InformalHearingPresentationTask < GenericTask
   def available_actions(user)
     if assigned_to == user

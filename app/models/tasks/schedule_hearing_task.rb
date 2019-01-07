@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ScheduleHearingTask < GenericTask
   class << self
     def create_from_params(params, current_user)

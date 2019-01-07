@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DecisionDocument < ApplicationRecord
   include Asyncable
   include UploadableDocument
@@ -12,7 +14,7 @@ class DecisionDocument < ApplicationRecord
 
   attr_writer :file
 
-  S3_SUB_BUCKET = "decisions".freeze
+  S3_SUB_BUCKET = "decisions"
 
   def document_type
     "BVA Decision"

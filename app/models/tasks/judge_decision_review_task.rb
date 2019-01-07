@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JudgeDecisionReviewTask < JudgeTask
   def available_actions(_user)
     [Constants.TASK_ACTIONS.JUDGE_CHECKOUT.to_h]

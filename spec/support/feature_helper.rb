@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FeatureHelper
   def click_dropdown(options = {}, container = page)
     options = { index: nil, text: nil }.merge(options)

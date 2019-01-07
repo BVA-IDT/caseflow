@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
 def scroll_position(id: nil, class_name: nil)
@@ -1065,12 +1067,12 @@ RSpec.feature "Reader" do
     context "Tags" do
       # :nocov:
       scenario "adding and deleting tags", skip: true do
-        TAG1 = "Medical".freeze
-        TAG2 = "Law document".freeze
+        TAG1 = "Medical"
+        TAG2 = "Law document"
 
-        DOC2_TAG1 = "Appeal Document".freeze
+        DOC2_TAG1 = "Appeal Document"
 
-        SELECT_VALUE_LABEL_CLASS = ".Select-value-label".freeze
+        SELECT_VALUE_LABEL_CLASS = ".Select-value-label"
 
         visit "/reader/appeal/#{appeal.vacols_id}/documents"
         click_on documents[0].type
@@ -1142,7 +1144,7 @@ RSpec.feature "Reader" do
             expect(tag_options[index]).to have_content(tag.text, wait: 5)
           end
 
-          NEW_TAG_TEXT = "New Tag".freeze
+          NEW_TAG_TEXT = "New Tag"
           fill_in "tags", with: (NEW_TAG_TEXT + "\n")
 
           # going to the document[0] page

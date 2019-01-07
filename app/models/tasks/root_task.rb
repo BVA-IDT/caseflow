@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RootTask < GenericTask
   after_initialize :set_assignee
 
