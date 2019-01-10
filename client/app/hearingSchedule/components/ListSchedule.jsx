@@ -4,7 +4,6 @@ import _ from 'lodash';
 import { LOGO_COLORS } from '../../constants/AppConstants';
 import { css } from 'glamor';
 import Table from '../../components/Table';
-import { formatDateStr } from '../../util/DateUtil';
 import Link from '@department-of-veterans-affairs/caseflow-frontend-toolkit/components/Link';
 import Button from '../../components/Button';
 import FilterRibbon from '../../components/FilterRibbon';
@@ -19,6 +18,7 @@ import { bindActionCreators } from 'redux';
 import connect from 'react-redux/es/connect/connect';
 import LoadingDataDisplay from '../../components/LoadingDataDisplay';
 import ListScheduleDateSearch from './ListScheduleDateSearch';
+import moment from 'moment';
 
 const downloadButtonStyling = css({
   marginTop: '60px'
@@ -112,9 +112,10 @@ class ListSchedule extends React.Component {
   getHearingScheduleRows = () => {
     const { hearingSchedule } = this.props;
 
-    return _.orderBy(hearingSchedule, (hearingDay) => hearingDay.hearingDate, 'asc').
+    return _.orderBy(hearingSchedule, (hearingDay) => hearingDay.scheduledFor, 'asc').
       map((hearingDay) => ({
-        hearingDate: <Link to={`/schedule/docket/${hearingDay.id}`}>{formatDateStr(hearingDay.hearingDate)}</Link>,
+        scheduledFor: <Link to={`/schedule/docket/${hearingDay.id}`}>
+          {moment(hearingDay.scheduledFor).format('ddd M/DD/YYYY')}</Link>,
         hearingType: hearingDay.hearingType,
         regionalOffice: hearingDay.regionalOffice,
         room: hearingDay.room,
@@ -132,9 +133,9 @@ class ListSchedule extends React.Component {
       {
         header: 'Date',
         align: 'left',
-        valueName: 'hearingDate',
+        valueName: 'scheduledFor',
         getSortValue: (hearingDay) => {
-          return hearingDay.hearingDate;
+          return hearingDay.scheduledFor;
         }
       },
       {
@@ -278,7 +279,7 @@ class ListSchedule extends React.Component {
 
 ListSchedule.propTypes = {
   hearingSchedule: PropTypes.shape({
-    hearingDate: PropTypes.string,
+    scheduledFor: PropTypes.string,
     hearingType: PropTypes.string,
     regionalOffice: PropTypes.string,
     room: PropTypes.string,

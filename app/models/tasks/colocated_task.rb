@@ -1,8 +1,5 @@
 class ColocatedTask < Task
-  include RoundRobinAssigner
-
   validates :action, inclusion: { in: Constants::CO_LOCATED_ADMIN_ACTIONS.keys.map(&:to_s) }
-  validate :assigned_by_role_is_valid
   validates :assigned_by, presence: true
   validates :parent, presence: true, if: :ama?
   validate :on_hold_duration_is_set, on: :update
@@ -14,7 +11,7 @@ class ColocatedTask < Task
     def create_many_from_params(params_array, user)
       # Create all ColocatedTasks in one transaction so that if any fail they all fail.
       ActiveRecord::Base.multi_transaction do
-        assignee = next_assignee
+        assignee = Colocated.singleton.next_assignee(self)
         records = params_array.map do |params|
           team_task = create_from_params(
             params.merge(assigned_to: Colocated.singleton, status: Constants.TASK_STATUSES.on_hold), user
@@ -38,6 +35,10 @@ class ColocatedTask < Task
     def list_of_assignees
       Colocated.singleton.non_admins.sort_by(&:id).pluck(:css_id)
     end
+  end
+
+  def automatically_assign_org_task?
+    false
   end
 
   def available_actions(_user)
@@ -66,16 +67,8 @@ class ColocatedTask < Task
 
   def actions_available?(user)
     return false if completed? || assigned_to != user
+
     true
-  end
-
-  def update_if_hold_expired!
-    update!(status: Constants.TASK_STATUSES.in_progress) if on_hold_expired?
-  end
-
-  def on_hold_expired?
-    return true if placed_on_hold_at && on_hold_duration && placed_on_hold_at + on_hold_duration.days < Time.zone.now
-    false
   end
 
   def assign_to_privacy_team_data
@@ -110,10 +103,6 @@ class ColocatedTask < Task
 
   def all_tasks_completed_for_appeal?
     appeal.tasks.where(type: ColocatedTask.name).map(&:status).uniq == [Constants.TASK_STATUSES.completed]
-  end
-
-  def assigned_by_role_is_valid
-    errors.add(:assigned_by, "has to be an attorney") if assigned_by && !assigned_by.attorney_in_vacols?
   end
 
   def on_hold_duration_is_set

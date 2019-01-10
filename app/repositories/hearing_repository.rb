@@ -36,9 +36,11 @@ class HearingRepository
 
       hearings.map do |hearing|
         next if hearing.master_record
+
         issues_hash_array = issues[hearing.appeal_vacols_id] || []
         hearing_worksheet_issues = worksheet_issues_for_appeals_hash[hearing.appeal_id] || []
         next unless hearing_worksheet_issues.empty?
+
         issues_hash_array.map { |i| WorksheetIssue.create_from_issue(hearing.appeal, Issue.load_from_vacols(i)) }
       end
     end
@@ -66,18 +68,16 @@ class HearingRepository
 
     def slot_new_hearing(parent_record_id, time, appeal)
       hearing_day = HearingDay.find_hearing_day(nil, parent_record_id)
+      hearing_datetime = hearing_day[:scheduled_for].to_datetime.change(
+        hour: time["h"].to_i,
+        minute: time["m"].to_i,
+        offset: time["offset"]
+      )
 
       if hearing_day[:hearing_type] == "C"
-        update_co_hearing(
-          hearing_day[:hearing_date].to_datetime.change(
-            hour: time["h"].to_i,
-            minute: time["m"],
-            offset: time["offset"]
-          ),
-          appeal
-        )
+        update_co_hearing(hearing_datetime, appeal)
       else
-        create_child_video_hearing(parent_record_id, hearing_day[:hearing_date], appeal)
+        create_child_video_hearing(parent_record_id, hearing_datetime, appeal)
       end
     end
 
@@ -89,13 +89,15 @@ class HearingRepository
       # Get the next open slot for that hearing date and time.
       hearing = VACOLS::CaseHearing.find_by(hearing_date: hearing_date_str, folder_nr: nil)
       fail NoOpenSlots, message: "No available slots for this hearing day." if hearing.nil?
+
       loaded_hearing = VACOLS::CaseHearing.load_hearing(hearing.hearing_pkseq)
       HearingRepository.update_vacols_hearing!(loaded_hearing, folder_nr: appeal.vacols_id)
     end
 
     def create_child_co_hearing(hearing_date_str, appeal)
-      hearing_day = HearingDay.find_by(hearing_type: "C", hearing_date: hearing_date_str.to_date)
+      hearing_day = HearingDay.find_by(hearing_type: "C", scheduled_for: hearing_date_str.to_date)
       fail LockedHearingDay, message: "Locked hearing day" if hearing_day.lock
+
       attorney_id = hearing_day.judge ? hearing_day.judge.vacols_attorney_id : nil
       VACOLS::CaseHearing.create_child_hearing!(
         folder_nr: appeal.vacols_id,
@@ -172,13 +174,14 @@ class HearingRepository
     def hearings_for(case_hearings)
       vacols_ids = case_hearings.map { |record| record[:hearing_pkseq] }.compact
 
-      fetched_hearings = Hearing.where(vacols_id: vacols_ids)
+      fetched_hearings = LegacyHearing.where(vacols_id: vacols_ids)
       fetched_hearings_hash = fetched_hearings.index_by { |hearing| hearing.vacols_id.to_i }
 
       case_hearings.map do |vacols_record|
         next empty_dockets(vacols_record) if master_record?(vacols_record)
-        hearing = Hearing.assign_or_create_from_vacols_record(vacols_record,
-                                                              fetched_hearings_hash[vacols_record.hearing_pkseq])
+
+        hearing = LegacyHearing.assign_or_create_from_vacols_record(vacols_record,
+                                                                    fetched_hearings_hash[vacols_record.hearing_pkseq])
         set_vacols_values(hearing, vacols_record)
       end.flatten
     end
@@ -201,7 +204,7 @@ class HearingRepository
       values = MasterRecordHelper.values_based_on_type(vacols_record)
       # Travel Board master records have a date range, so we create a master record for each day
       values[:dates].inject([]) do |result, date|
-        result << Hearings::MasterRecord.new(date: VacolsHelper.normalize_vacols_datetime(date),
+        result << Hearings::MasterRecord.new(scheduled_for: VacolsHelper.normalize_vacols_datetime(date),
                                              type: values[:type],
                                              master_record: true,
                                              regional_office_key: values[:ro])
@@ -247,7 +250,7 @@ class HearingRepository
         room: vacols_record.room,
         regional_office_key: ro,
         type: type,
-        date: date,
+        scheduled_for: date,
         master_record: false
       }
     end

@@ -33,10 +33,13 @@ import {
   onUpdateLock,
   onResetLockSuccessMessage,
   handleDailyDocketServerError,
-  onResetDailyDocketAfterError
+  onResetDailyDocketAfterError,
+  handleLockHearingServerError,
+  onResetLockHearingAfterError
 } from '../actions';
 import HearingDayEditModal from '../components/HearingDayEditModal';
 import Alert from '../../components/Alert';
+import HEARING_ROOMS_LIST from '../../../constants/HEARING_ROOMS_LIST.json';
 
 const emptyValueEntry = {
   label: '',
@@ -65,12 +68,17 @@ export class DailyDocketContainer extends React.Component {
       _.isNil(this.props.dailyDocketServerError))) {
       this.props.onResetDailyDocketAfterError();
     }
+    if (!((_.isNil(prevProps.onErrorHearingDayLock) && this.props.onErrorHearingDayLock) ||
+      _.isNil(this.props.onErrorHearingDayLock))) {
+      this.props.onResetLockHearingAfterError();
+    }
   };
 
   componentWillUnmount = () => {
     this.props.onResetSaveSuccessful();
     this.props.onCancelRemoveHearingDay();
     this.props.onResetDailyDocketAfterError();
+    this.props.onResetLockHearingAfterError();
   };
 
   loadHearingDay = () => {
@@ -97,7 +105,7 @@ export class DailyDocketContainer extends React.Component {
         offset: moment.tz('America/New_York').format('Z')
       };
     }
-    const timeObject = moment(hearing.date);
+    const timeObject = moment(hearing.scheduledFor);
 
     return {
       // eslint-disable-next-line id-length
@@ -117,14 +125,14 @@ export class DailyDocketContainer extends React.Component {
       notes: hearing.editedNotes ? hearing.editedNotes : hearing.notes,
       master_record_updated: hearing.editedDate ? { id: hearing.editedDate,
         time } : null,
-      date: hearing.editedTime ? moment(hearing.date).set(time) : hearing.date
+      scheduled_for: hearing.editedTime ? moment(hearing.scheduledFor).set(time) : hearing.scheduledFor
     };
   };
 
   saveHearing = (hearing) => {
     const formattedHearing = this.formatHearing(hearing);
 
-    ApiUtil.patch(`/hearings/${hearing.id}`, { data: { hearing: formattedHearing } }).
+    ApiUtil.patch(`/hearings/${hearing.externalId}`, { data: { hearing: formattedHearing } }).
       then((response) => {
         const resp = ApiUtil.convertToCamelCase(JSON.parse(response.text));
 
@@ -180,6 +188,8 @@ export class DailyDocketContainer extends React.Component {
     ApiUtil.patch(`/hearings/hearing_day/${this.props.dailyDocket.id}`, { data: { lock } }).
       then(() => {
         this.props.onUpdateLock(lock);
+      }, (err) => {
+        this.props.handleLockHearingServerError(err);
       });
   };
 
@@ -200,13 +210,18 @@ export class DailyDocketContainer extends React.Component {
   ]);
 
   openModal = () => {
-    this.setState({ showModalAlert: false });
-    this.setState({ modalOpen: true });
+    this.setState({ showModalAlert: false,
+      modalOpen: true });
 
     // find labels in options before passing values to modal
+    const room = _.findKey(HEARING_ROOMS_LIST, { label: this.props.dailyDocket.room });
+    const roomOption = { label: HEARING_ROOMS_LIST[room].label,
+      value: room };
+    const judge = _.find(this.props.activeJudges, { value: parseInt(this.props.dailyDocket.judgeId, 10) });
     const coordinator = _.find(this.props.activeCoordinators, { label: this.props.dailyDocket.bvaPoc });
 
-    this.props.selectVlj(this.props.dailyDocket.judgeId);
+    this.props.selectHearingRoom(roomOption);
+    this.props.selectVlj(judge);
     this.props.selectHearingCoordinator(coordinator);
     this.props.setNotes(this.props.dailyDocket.notes);
     this.props.onHearingDayModified(false);
@@ -321,6 +336,8 @@ export class DailyDocketContainer extends React.Component {
         dailyDocketServerError={this.props.dailyDocketServerError}
         onResetDailyDocketAfterError={this.props.onResetDailyDocketAfterError}
         notes={this.props.notes}
+        onErrorHearingDayLock={this.props.onErrorHearingDayLock}
+        onResetLockHearingAfterError={this.props.onResetLockHearingAfterError}
       />
       {this.state.modalOpen &&
       <HearingDayEditModal
@@ -343,11 +360,13 @@ const mapStateToProps = (state) => ({
   hearingRoom: state.hearingSchedule.hearingRoom,
   notes: state.hearingSchedule.notes,
   hearingDayModified: state.hearingSchedule.hearingDayModified,
+  activeJudges: state.hearingSchedule.activeJudges,
   activeCoordinators: state.hearingSchedule.activeCoordinators,
   displayRemoveHearingDayModal: state.hearingSchedule.displayRemoveHearingDayModal,
   displayLockModal: state.hearingSchedule.displayLockModal,
   displayLockSuccessMessage: state.hearingSchedule.displayLockSuccessMessage,
-  dailyDocketServerError: state.hearingSchedule.dailyDocketServerError
+  dailyDocketServerError: state.hearingSchedule.dailyDocketServerError,
+  onErrorHearingDayLock: state.hearingSchedule.onErrorHearingDayLock
 });
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({
@@ -374,7 +393,9 @@ const mapDispatchToProps = (dispatch) => bindActionCreators({
   onUpdateLock,
   onResetLockSuccessMessage,
   handleDailyDocketServerError,
-  onResetDailyDocketAfterError
+  onResetDailyDocketAfterError,
+  handleLockHearingServerError,
+  onResetLockHearingAfterError
 }, dispatch);
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(DailyDocketContainer));
