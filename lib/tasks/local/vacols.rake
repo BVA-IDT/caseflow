@@ -25,17 +25,11 @@ namespace :local do
 
     # rubocop:disable Metrics/MethodLength
     def setup_facols(suffix)
-      puts "Stopping vacols-db-#{suffix} and removing existing volumes"
-      `docker-compose stop vacols-db-#{suffix}`
-      `docker-compose rm -f -v vacols-db-#{suffix}`
-      puts "Starting database, and logging to #{Rails.root.join('tmp', 'vacols.log')}"
-      `docker-compose up vacols-db-#{suffix} &> './tmp/vacols.log' &`
-
       # Loop until setup is complete. At most 10 minutes
       puts "Waiting for the database to be ready"
       setup_complete = false
       600.times do
-        if `grep -q 'Done ! The database is ready for use' ./tmp/vacols.log; echo $?` == "0\n"
+        if `docker-compose logs vacols-db-#{suffix} | grep -q 'Done ! The database is ready for use'; echo $?` == "0\n"
           setup_complete = true
           break
         end
