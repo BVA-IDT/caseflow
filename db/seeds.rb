@@ -481,6 +481,7 @@ class SeedDB
       description: "nonrating description",
       contention_reference_id: "1234",
       ineligible_reason: nil,
+      benefit_type: "compensation",
       decision_date: Date.new(2018, 5, 1)
     )
 
@@ -490,6 +491,7 @@ class SeedDB
       description: "nonrating description",
       contention_reference_id: "12345",
       decision_date: Date.new(2018, 5, 1),
+      benefit_type: "compensation",
       ineligible_reason: :untimely
     )
 
