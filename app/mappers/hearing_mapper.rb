@@ -23,7 +23,7 @@ module HearingMapper
         bva_poc: hearing_info[:bva_poc],
         judge_id: hearing_info[:judge_id]
       }.select do |k, _v|
-        hearing_info.keys.map(&:to_sym).include?(k) || (k.to_sym == :scheduled_for && hearing_info[:date])
+        hearing_info.keys.map(&:to_sym).include?(k)
         # only send updates to key/values that are passed
       end
     end
@@ -47,7 +47,7 @@ module HearingMapper
     # asctime - returns a canonical string representation of time
     def datetime_based_on_type(datetime:, regional_office_key:, type:)
       datetime = VacolsHelper.normalize_vacols_datetime(datetime)
-      return datetime if type == :central
+      return datetime if type == "C"
 
       datetime.asctime.in_time_zone(timezone(regional_office_key)).in_time_zone("Eastern Time (US & Canada)")
     end

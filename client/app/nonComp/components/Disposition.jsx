@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import update from 'immutability-helper';
 
 import { formatDate } from '../../util/DateUtil';
 import InlineForm from '../../components/InlineForm';
@@ -43,7 +44,8 @@ class NonCompDecisionIssue extends React.PureComponent {
   render = () => {
     const {
       issue,
-      index
+      index,
+      disabled
     } = this.props;
     let issueDate = formatDate(issue.rating_issue_profile_date || issue.decision_date);
 
@@ -61,10 +63,12 @@ class NonCompDecisionIssue extends React.PureComponent {
             label={`description-issue-${index}`}
             hideLabel
             value={this.props.decisionDescription}
+            disabled={disabled}
             onChange={this.handleDescriptionChange} />
         </div>
         <div className="usa-width-one-third cf-disposition">
           <SearchableDropdown
+            readOnly={disabled}
             name={`disposition-issue-${index}`}
             label={`disposition-issue-${index}`}
             hideLabel
@@ -113,26 +117,39 @@ class NonCompDispositions extends React.PureComponent {
   }
 
   onDecisionIssueDispositionChange = (requestIssueIndex, value) => {
-    let newRequestIssues = this.state.requestIssues;
+    const newRequestIssues = update(this.state.requestIssues,
+      { [requestIssueIndex]: { decisionIssue: { disposition: { $set: value } } } });
 
-    newRequestIssues[requestIssueIndex].decisionIssue.disposition = value;
-    this.setState({ requestIssues: newRequestIssues });
-    this.checkFormFilledOut();
+    this.setState({ requestIssues: newRequestIssues }, this.checkFormFilledOut);
   }
 
   onDecisionIssueDescriptionChange = (requestIssueIndex, value) => {
-    let newRequestIssues = this.state.requestIssues;
+    const newRequestIssues = update(this.state.requestIssues,
+      { [requestIssueIndex]: { decisionIssue: { description: { $set: value } } } });
 
-    newRequestIssues[requestIssueIndex].decisionIssue.description = value;
     this.setState({ requestIssues: newRequestIssues });
   }
 
   render = () => {
     const {
       appeal,
-      businessLineUrl,
-      decisionIssuesStatus
+      decisionIssuesStatus,
+      task
     } = this.props;
+
+    let completeDiv = null;
+
+    if (!task.completed_at) {
+      completeDiv = <React.Fragment>
+        <div className="cf-txt-r">
+          <a className="cf-cancel-link" href={`${task.tasks_url}`}>Cancel</a>
+          <Button className="usa-button"
+            name="submit-update"
+            loading={decisionIssuesStatus.update === DECISION_ISSUE_UPDATE_STATUS.IN_PROGRESS}
+            disabled={!this.state.isFilledOut} onClick={this.handleSave}>Complete</Button>
+        </div>
+      </React.Fragment>;
+    }
 
     return <div>
       <div className="cf-decisions">
@@ -155,6 +172,7 @@ class NonCompDispositions extends React.PureComponent {
                 onDescriptionChange={this.onDecisionIssueDescriptionChange}
                 decisionDescription={issue.decisionIssue.description}
                 decisionDisposition={issue.decisionIssue.disposition}
+                disabled={Boolean(task.completed_at)}
               />;
             })
           }
@@ -168,17 +186,12 @@ class NonCompDispositions extends React.PureComponent {
               name="decision-date"
               value={this.state.decisionDate}
               onChange={this.handleDecisionDate}
+              readOnly={Boolean(task.completed_at)}
             />
           </InlineForm>
         </div>
       </div>
-      <div className="cf-txt-r">
-        <a className="cf-cancel-link" href={`/decision_reviews/${businessLineUrl}`}>Cancel</a>
-        <Button className="usa-button"
-          name="submit-update"
-          loading={decisionIssuesStatus.update === DECISION_ISSUE_UPDATE_STATUS.IN_PROGRESS}
-          disabled={!this.state.isFilledOut} onClick={this.handleSave}>Complete</Button>
-      </div>
+      { completeDiv }
     </div>;
   }
 }
@@ -186,7 +199,7 @@ class NonCompDispositions extends React.PureComponent {
 const Dispositions = connect(
   (state) => ({
     appeal: state.appeal,
-    businessLineUrl: state.businessLineUrl,
+    task: state.task,
     decisionIssuesStatus: state.decisionIssuesStatus
   })
 )(NonCompDispositions);
