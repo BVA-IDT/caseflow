@@ -32,6 +32,10 @@ class Idt::Api::V1::AppealsController < Idt::Api::V1::BaseController
       render json: { data: json_appeals_with_tasks(tasks_assigned_to_user) }
     end
   end
+  
+  def case_storage
+    render json: json_appeals(appeals_in_case_storage)
+  end
 
   def details
     render json: json_appeal_details
@@ -68,6 +72,11 @@ class Idt::Api::V1::AppealsController < Idt::Api::V1::BaseController
     end
     appeals
   end
+  
+  def appeals_in_case_storage
+    appeals = Appeal.where(location_code: COPY::CASE_LIST_TABLE_CASE_STORAGE_LABEL).last(20)
+    appeals
+  end
 
   def outcode_params
     keys = %w[citation_number decision_date redacted_document_location]
@@ -88,7 +97,7 @@ class Idt::Api::V1::AppealsController < Idt::Api::V1::BaseController
       base_url: request.base_url
     ).as_json
   end
-
+  
   def json_appeals_with_tasks(tasks)
     tasks.map do |task|
       ActiveModelSerializers::SerializableResource.new(
